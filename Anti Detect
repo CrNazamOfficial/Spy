@@ -43,25 +43,21 @@ local function createRemoteSpyGUI()
     gui.ResetOnSpawn = false
     gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     
-    local toggleIcon = Instance.new("Frame")
-    toggleIcon.Name = "ToggleIcon"
-    toggleIcon.Size = UDim2.new(0, 35, 0, 35)
-    toggleIcon.Position = UDim2.new(1, -45, 0.5, -17)
-    toggleIcon.BackgroundColor3 = Color3.fromRGB(12, 12, 18)
-    toggleIcon.BorderSizePixel = 0
-    toggleIcon.Parent = gui
-    toggleIcon.Active = true
-    toggleIcon.Draggable = true
-    toggleIcon.Visible = false
-    
-    local iconStroke = Instance.new("UIStroke")
-    iconStroke.Color = Color3.fromRGB(255, 60, 60)
-    iconStroke.Thickness = 1.5
-    iconStroke.Parent = toggleIcon
+    local iconButton = Instance.new("ImageButton")
+    iconButton.Name = "MinimizedIcon"
+    iconButton.Size = UDim2.new(0, 35, 0, 35)
+    iconButton.Position = UDim2.new(0, 60, 0, 60)
+    iconButton.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    iconButton.BorderColor3 = Color3.fromRGB(255, 80, 80)
+    iconButton.BorderSizePixel = 2
+    iconButton.Image = ""
+    iconButton.Visible = false
+    iconButton.Active = true
+    iconButton.Parent = gui
     
     local iconCorner = Instance.new("UICorner")
     iconCorner.CornerRadius = UDim.new(0, 6)
-    iconCorner.Parent = toggleIcon
+    iconCorner.Parent = iconButton
     
     local iconLabel = Instance.new("TextLabel")
     iconLabel.Size = UDim2.new(1, 0, 1, 0)
@@ -69,298 +65,253 @@ local function createRemoteSpyGUI()
     iconLabel.Text = "R"
     iconLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     iconLabel.Font = Enum.Font.GothamBold
-    iconLabel.TextSize = 14
-    iconLabel.Parent = toggleIcon
+    iconLabel.TextSize = 16
+    iconLabel.Parent = iconButton
     
-    local iconGradient = Instance.new("UIGradient")
-    iconGradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 130, 130))
-    }
-    iconGradient.Rotation = 90
-    iconGradient.Parent = iconLabel
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Name = "MainFrame"
+    mainFrame.Size = UDim2.new(0, 180, 0, 250)
+    mainFrame.Position = UDim2.new(0.5, -90, 0.5, -125)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    mainFrame.BorderColor3 = Color3.fromRGB(255, 80, 80)
+    mainFrame.BorderSizePixel = 2
+    mainFrame.Active = true
+    mainFrame.Visible = true
+    mainFrame.Parent = gui
     
-    local iconButton = Instance.new("TextButton")
-    iconButton.Size = UDim2.new(1, 0, 1, 0)
-    iconButton.BackgroundTransparency = 1
-    iconButton.Text = ""
-    iconButton.Parent = toggleIcon
+    local mainCorner = Instance.new("UICorner")
+    mainCorner.CornerRadius = UDim.new(0, 8)
+    mainCorner.Parent = mainFrame
     
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 140, 0, 180)
-    frame.Position = UDim2.new(1, -150, 0.5, -90)
-    frame.BackgroundColor3 = Color3.fromRGB(12, 12, 18)
-    frame.BorderSizePixel = 0
-    frame.Parent = gui
-    frame.Active = true
-    frame.Draggable = true
-    frame.ClipsDescendants = true
+    local dragHandle = Instance.new("Frame")
+    dragHandle.Name = "DragHandle"
+    dragHandle.Size = UDim2.new(1, 0, 0, 25)
+    dragHandle.Position = UDim2.new(0, 0, 0, 0)
+    dragHandle.BackgroundTransparency = 1
+    dragHandle.Active = true
+    dragHandle.Parent = mainFrame
     
-    local frameStroke = Instance.new("UIStroke")
-    frameStroke.Color = Color3.fromRGB(255, 60, 60)
-    frameStroke.Thickness = 1.5
-    frameStroke.Parent = frame
-    
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
-    corner.Parent = frame
-    
-    local glow = Instance.new("ImageLabel")
-    glow.Name = "Glow"
-    glow.Size = UDim2.new(1, 30, 1, 30)
-    glow.Position = UDim2.new(0, -15, 0, -15)
-    glow.BackgroundTransparency = 1
-    glow.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
-    glow.ImageColor3 = Color3.fromRGB(255, 60, 60)
-    glow.ImageTransparency = 0.8
-    glow.ScaleType = Enum.ScaleType.Slice
-    glow.SliceCenter = Rect.new(10, 10, 118, 118)
-    glow.Parent = frame
-    glow.ZIndex = 0
-    
-    local closeBtn = Instance.new("TextButton")
-    closeBtn.Size = UDim2.new(0, 16, 0, 16)
-    closeBtn.Position = UDim2.new(1, -18, 0, 2)
-    closeBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
-    closeBtn.BorderSizePixel = 0
-    closeBtn.Text = "X"
-    closeBtn.TextColor3 = Color3.fromRGB(255, 70, 70)
-    closeBtn.Font = Enum.Font.GothamBold
-    closeBtn.TextSize = 8
-    closeBtn.AutoButtonColor = false
-    closeBtn.Parent = frame
-    
-    local closeStroke = Instance.new("UIStroke")
-    closeStroke.Color = Color3.fromRGB(255, 50, 50)
-    closeStroke.Thickness = 1
-    closeStroke.Parent = closeBtn
-    
-    local closeCorner = Instance.new("UICorner")
-    closeCorner.CornerRadius = UDim.new(0, 3)
-    closeCorner.Parent = closeBtn
+    local header = Instance.new("Frame")
+    header.Name = "Header"
+    header.Size = UDim2.new(1, 0, 0, 25)
+    header.Position = UDim2.new(0, 0, 0, 0)
+    header.BackgroundTransparency = 1
+    header.Parent = mainFrame
     
     local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, -20, 0, 16)
+    title.Name = "Title"
+    title.Size = UDim2.new(0.75, 0, 1, 0)
+    title.Position = UDim2.new(0, 6, 0, 0)
     title.BackgroundTransparency = 1
-    title.Text = "SPY"
+    title.Text = "REMOTE SPY"
     title.TextColor3 = Color3.fromRGB(255, 255, 255)
     title.Font = Enum.Font.GothamBold
-    title.TextSize = 8
-    title.TextYAlignment = Enum.TextYAlignment.Center
-    title.Parent = frame
+    title.TextSize = 12
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.Parent = header
     
-    local titleGradient = Instance.new("UIGradient")
-    titleGradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 130, 130))
-    }
-    titleGradient.Rotation = 90
-    titleGradient.Parent = title
+    local closeButton = Instance.new("TextButton")
+    closeButton.Name = "CloseButton"
+    closeButton.Size = UDim2.new(0, 20, 0, 20)
+    closeButton.Position = UDim2.new(1, -23, 0.5, -10)
+    closeButton.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    closeButton.BorderColor3 = Color3.fromRGB(255, 80, 80)
+    closeButton.BorderSizePixel = 1
+    closeButton.Text = "X"
+    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeButton.Font = Enum.Font.GothamBold
+    closeButton.TextSize = 11
+    closeButton.Parent = header
     
-    local line = Instance.new("Frame")
-    line.Size = UDim2.new(0.85, 0, 0, 1)
-    line.Position = UDim2.new(0.075, 0, 0, 17)
-    line.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
-    line.BorderSizePixel = 0
-    line.Parent = frame
+    local closeCorner = Instance.new("UICorner")
+    closeCorner.CornerRadius = UDim.new(0, 4)
+    closeCorner.Parent = closeButton
     
-    local lineGradient = Instance.new("UIGradient")
-    lineGradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 60, 60)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 120, 120)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 60, 60))
-    }
-    lineGradient.Parent = line
+    closeButton.MouseEnter:Connect(function()
+        closeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+    end)
+    
+    closeButton.MouseLeave:Connect(function()
+        closeButton.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    end)
+    
+    local headerLine = Instance.new("Frame")
+    headerLine.Name = "HeaderLine"
+    headerLine.Size = UDim2.new(0.92, 0, 0, 1)
+    headerLine.Position = UDim2.new(0.04, 0, 0, 26)
+    headerLine.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+    headerLine.BorderSizePixel = 0
+    headerLine.Parent = mainFrame
 
+    local buttonFrame = Instance.new("Frame")
+    buttonFrame.Name = "ButtonFrame"
+    buttonFrame.Size = UDim2.new(0.92, 0, 0, 26)
+    buttonFrame.Position = UDim2.new(0.04, 0, 0, 32)
+    buttonFrame.BackgroundTransparency = 1
+    buttonFrame.Parent = mainFrame
+    
     local toggleBtn = Instance.new("TextButton")
-    toggleBtn.Size = UDim2.new(0.85, 0, 0, 18)
-    toggleBtn.Position = UDim2.new(0.075, 0, 0, 22)
-    toggleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
-    toggleBtn.BorderSizePixel = 0
+    toggleBtn.Name = "ToggleButton"
+    toggleBtn.Size = UDim2.new(0.48, 0, 1, 0)
+    toggleBtn.Position = UDim2.new(0, 0, 0, 0)
+    toggleBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    toggleBtn.BorderColor3 = Color3.fromRGB(60, 60, 60)
+    toggleBtn.BorderSizePixel = 1
     toggleBtn.Text = "START"
     toggleBtn.TextColor3 = Color3.fromRGB(100, 255, 100)
     toggleBtn.Font = Enum.Font.GothamBold
-    toggleBtn.TextSize = 7
-    toggleBtn.AutoButtonColor = false
-    toggleBtn.Parent = frame
-    
-    local toggleStroke = Instance.new("UIStroke")
-    toggleStroke.Color = Color3.fromRGB(50, 50, 60)
-    toggleStroke.Thickness = 1
-    toggleStroke.Parent = toggleBtn
+    toggleBtn.TextSize = 10
+    toggleBtn.Parent = buttonFrame
     
     local toggleCorner = Instance.new("UICorner")
     toggleCorner.CornerRadius = UDim.new(0, 4)
     toggleCorner.Parent = toggleBtn
     
     local saveBtn = Instance.new("TextButton")
-    saveBtn.Size = UDim2.new(0.85, 0, 0, 18)
-    saveBtn.Position = UDim2.new(0.075, 0, 0, 44)
-    saveBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
-    saveBtn.BorderSizePixel = 0
+    saveBtn.Name = "SaveButton"
+    saveBtn.Size = UDim2.new(0.48, 0, 1, 0)
+    saveBtn.Position = UDim2.new(0.52, 0, 0, 0)
+    saveBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    saveBtn.BorderColor3 = Color3.fromRGB(60, 60, 60)
+    saveBtn.BorderSizePixel = 1
     saveBtn.Text = "SAVE"
     saveBtn.TextColor3 = Color3.fromRGB(255, 200, 100)
     saveBtn.Font = Enum.Font.GothamBold
-    saveBtn.TextSize = 7
-    saveBtn.AutoButtonColor = false
-    saveBtn.Parent = frame
-    
-    local saveStroke = Instance.new("UIStroke")
-    saveStroke.Color = Color3.fromRGB(50, 50, 60)
-    saveStroke.Thickness = 1
-    saveStroke.Parent = saveBtn
+    saveBtn.TextSize = 10
+    saveBtn.Parent = buttonFrame
     
     local saveCorner = Instance.new("UICorner")
     saveCorner.CornerRadius = UDim.new(0, 4)
     saveCorner.Parent = saveBtn
     
     local clearBtn = Instance.new("TextButton")
-    clearBtn.Size = UDim2.new(0.85, 0, 0, 18)
-    clearBtn.Position = UDim2.new(0.075, 0, 0, 66)
-    clearBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
-    clearBtn.BorderSizePixel = 0
+    clearBtn.Name = "ClearButton"
+    clearBtn.Size = UDim2.new(0.92, 0, 0, 26)
+    clearBtn.Position = UDim2.new(0.04, 0, 0, 63)
+    clearBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    clearBtn.BorderColor3 = Color3.fromRGB(60, 60, 60)
+    clearBtn.BorderSizePixel = 1
     clearBtn.Text = "CLEAR"
     clearBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
     clearBtn.Font = Enum.Font.GothamBold
-    clearBtn.TextSize = 7
-    clearBtn.AutoButtonColor = false
-    clearBtn.Parent = frame
-    
-    local clearStroke = Instance.new("UIStroke")
-    clearStroke.Color = Color3.fromRGB(50, 50, 60)
-    clearStroke.Thickness = 1
-    clearStroke.Parent = clearBtn
+    clearBtn.TextSize = 10
+    clearBtn.Parent = mainFrame
     
     local clearCorner = Instance.new("UICorner")
     clearCorner.CornerRadius = UDim.new(0, 4)
     clearCorner.Parent = clearBtn
     
     local statusLabel = Instance.new("TextLabel")
-    statusLabel.Size = UDim2.new(0.85, 0, 0, 12)
-    statusLabel.Position = UDim2.new(0.075, 0, 0, 88)
+    statusLabel.Name = "StatusLabel"
+    statusLabel.Size = UDim2.new(0.92, 0, 0, 18)
+    statusLabel.Position = UDim2.new(0.04, 0, 0, 94)
     statusLabel.BackgroundTransparency = 1
-    statusLabel.Text = "Ready | 0"
+    statusLabel.Text = "Logs: 0 | Status: Ready"
     statusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
     statusLabel.Font = Enum.Font.Gotham
-    statusLabel.TextSize = 6
+    statusLabel.TextSize = 9
     statusLabel.TextXAlignment = Enum.TextXAlignment.Left
-    statusLabel.Parent = frame
+    statusLabel.Parent = mainFrame
+    
+    local listLine = Instance.new("Frame")
+    listLine.Name = "ListLine"
+    listLine.Size = UDim2.new(0.92, 0, 0, 1)
+    listLine.Position = UDim2.new(0.04, 0, 0, 115)
+    listLine.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+    listLine.BorderSizePixel = 0
+    listLine.Parent = mainFrame
     
     local logFrame = Instance.new("Frame")
-    logFrame.Size = UDim2.new(0.85, 0, 0, 65)
-    logFrame.Position = UDim2.new(0.075, 0, 0, 103)
+    logFrame.Name = "LogFrame"
+    logFrame.Size = UDim2.new(0.92, 0, 0, 110)
+    logFrame.Position = UDim2.new(0.04, 0, 0, 120)
     logFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-    logFrame.BorderSizePixel = 0
+    logFrame.BorderColor3 = Color3.fromRGB(40, 40, 40)
+    logFrame.BorderSizePixel = 1
     logFrame.ClipsDescendants = true
-    logFrame.Parent = frame
-    
-    local logStroke = Instance.new("UIStroke")
-    logStroke.Color = Color3.fromRGB(40, 40, 40)
-    logStroke.Thickness = 1
-    logStroke.Parent = logFrame
+    logFrame.Parent = mainFrame
     
     local logCorner = Instance.new("UICorner")
     logCorner.CornerRadius = UDim.new(0, 4)
     logCorner.Parent = logFrame
     
     local scrollFrame = Instance.new("ScrollingFrame")
+    scrollFrame.Name = "ScrollFrame"
     scrollFrame.Size = UDim2.new(1, 0, 1, 0)
+    scrollFrame.Position = UDim2.new(0, 0, 0, 0)
     scrollFrame.BackgroundTransparency = 1
     scrollFrame.BorderSizePixel = 0
-    scrollFrame.ScrollBarThickness = 3
+    scrollFrame.ScrollBarThickness = 4
     scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
     scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
     scrollFrame.Parent = logFrame
     
     local logText = Instance.new("TextLabel")
+    logText.Name = "LogText"
     logText.Size = UDim2.new(1, -6, 1, 0)
     logText.Position = UDim2.new(0, 3, 0, 0)
     logText.BackgroundTransparency = 1
-    logText.Text = "Waiting..."
+    logText.Text = "Click START to begin monitoring..."
     logText.TextColor3 = Color3.fromRGB(200, 200, 200)
     logText.Font = Enum.Font.Code
-    logText.TextSize = 6
+    logText.TextSize = 8
     logText.TextXAlignment = Enum.TextXAlignment.Left
     logText.TextYAlignment = Enum.TextYAlignment.Top
     logText.TextWrapped = true
     logText.Parent = scrollFrame
     
-    local credit = Instance.new("TextLabel")
-    credit.Size = UDim2.new(1, 0, 0, 12)
-    credit.Position = UDim2.new(0, 0, 1, -13)
-    credit.BackgroundTransparency = 1
-    credit.Text = "Nazam"
-    credit.TextColor3 = Color3.fromRGB(100, 100, 120)
-    credit.Font = Enum.Font.Gotham
-    credit.TextSize = 6
-    credit.Parent = frame
-    
-    local function tweenButton(button, props, duration)
-        local tween = TweenService:Create(button, TweenInfo.new(duration or 0.2, Enum.EasingStyle.Quad), props)
-        tween:Play()
-    end
-    
-    closeBtn.MouseButton1Click:Connect(function()
-        tweenButton(frame, {Size = UDim2.new(0, 0, 0, 0)}, 0.3)
-        task.wait(0.3)
-        frame.Visible = false
-        toggleIcon.Visible = true
-        toggleIcon.Position = frame.Position
-    end)
-    
-    closeBtn.MouseEnter:Connect(function()
-        tweenButton(closeBtn, {BackgroundColor3 = Color3.fromRGB(255, 50, 50)}, 0.1)
-        tweenButton(closeBtn, {TextColor3 = Color3.fromRGB(255, 255, 255)}, 0.1)
-    end)
-    
-    closeBtn.MouseLeave:Connect(function()
-        tweenButton(closeBtn, {BackgroundColor3 = Color3.fromRGB(20, 20, 28)}, 0.1)
-        tweenButton(closeBtn, {TextColor3 = Color3.fromRGB(255, 70, 70)}, 0.1)
-    end)
-    
-    iconButton.MouseButton1Click:Connect(function()
-        toggleIcon.Visible = false
-        frame.Visible = true
-        frame.Position = toggleIcon.Position
-        frame.Size = UDim2.new(0, 0, 0, 0)
-        tweenButton(frame, {Size = UDim2.new(0, 140, 0, 180)}, 0.3)
-    end)
-    
-    iconButton.MouseEnter:Connect(function()
-        tweenButton(toggleIcon, {BackgroundColor3 = Color3.fromRGB(20, 20, 30)}, 0.1)
-    end)
-    
-    iconButton.MouseLeave:Connect(function()
-        tweenButton(toggleIcon, {BackgroundColor3 = Color3.fromRGB(12, 12, 18)}, 0.1)
-    end)
+    local creditLabel = Instance.new("TextLabel")
+    creditLabel.Name = "CreditLabel"
+    creditLabel.Size = UDim2.new(1, 0, 0, 18)
+    creditLabel.Position = UDim2.new(0, 0, 1, -19)
+    creditLabel.BackgroundTransparency = 1
+    creditLabel.Text = "By: Nazam"
+    creditLabel.TextColor3 = Color3.fromRGB(120, 120, 120)
+    creditLabel.Font = Enum.Font.Gotham
+    creditLabel.TextSize = 9
+    creditLabel.Parent = mainFrame
     
     local function updateLogDisplay()
         local displayText = ""
-        local maxDisplay = 20
+        local maxDisplay = 30
         local startIndex = math.max(1, #_G.RemoteSpyData - maxDisplay + 1)
         
         for i = startIndex, #_G.RemoteSpyData do
             local log = _G.RemoteSpyData[i]
-            displayText = displayText .. string.format("[%s] %s\n", log.Time, log.Name)
+            displayText = displayText .. string.format("[%s] %s: %s\n", log.Time, log.Type, log.Name)
+            if log.Args and log.Args ~= "" then
+                displayText = displayText .. string.format("Args: %s\n", log.Args)
+            end
+            displayText = displayText .. "\n"
         end
         
         if displayText == "" then
-            logText.Text = "Waiting..."
+            if _G.RemoteSpyActive then
+                logText.Text = "Monitoring... No events yet."
+            else
+                logText.Text = "Click START to begin monitoring..."
+            end
         else
             logText.Text = displayText
         end
         
-        logText.Size = UDim2.new(1, -6, 0, math.max(65, #displayText / 2))
+        logText.Size = UDim2.new(1, -6, 0, math.max(110, #displayText / 1.5))
         scrollFrame.CanvasSize = UDim2.new(0, 0, 0, logText.AbsoluteSize.Y)
         scrollFrame.CanvasPosition = Vector2.new(0, scrollFrame.AbsoluteCanvasSize.Y)
     end
 
+    local spyConnections = {}
+    
     local function startSpy()
         _G.RemoteSpyActive = true
+        logText.Text = "Monitoring... Scanning for remotes..."
+        
+        local remoteCount = 0
         
         for _, remote in pairs(game:GetDescendants()) do
             if remote:IsA("RemoteEvent") then
-                remote.OnClientEvent:Connect(function(...)
+                remoteCount = remoteCount + 1
+                local connection = remote.OnClientEvent:Connect(function(...)
                     if _G.RemoteSpyActive then
                         local args = {...}
                         local argsStr = ""
@@ -368,6 +319,8 @@ local function createRemoteSpyGUI()
                         for i, arg in ipairs(args) do
                             if typeof(arg) == "Instance" then
                                 argsStr = argsStr .. tostring(arg.Name)
+                            elseif typeof(arg) == "table" then
+                                argsStr = argsStr .. "{table}"
                             else
                                 argsStr = argsStr .. tostring(arg)
                             end
@@ -390,12 +343,14 @@ local function createRemoteSpyGUI()
                         print("🔴 RemoteEvent:", remote.Name, "→", argsStr)
                         
                         updateLogDisplay()
-                        statusLabel.Text = string.format("Active | %d", #_G.RemoteSpyData)
+                        statusLabel.Text = string.format("Logs: %d | Status: Active", #_G.RemoteSpyData)
                     end
                 end)
+                table.insert(spyConnections, connection)
             end
             
             if remote:IsA("RemoteFunction") then
+                remoteCount = remoteCount + 1
                 local oldInvoke = remote.OnClientInvoke
                 
                 remote.OnClientInvoke = function(...)
@@ -406,6 +361,8 @@ local function createRemoteSpyGUI()
                         for i, arg in ipairs(args) do
                             if typeof(arg) == "Instance" then
                                 argsStr = argsStr .. tostring(arg.Name)
+                            elseif typeof(arg) == "table" then
+                                argsStr = argsStr .. "{table}"
                             else
                                 argsStr = argsStr .. tostring(arg)
                             end
@@ -428,7 +385,7 @@ local function createRemoteSpyGUI()
                         print("🔵 RemoteFunction:", remote.Name, "→", argsStr)
                         
                         updateLogDisplay()
-                        statusLabel.Text = string.format("Active | %d", #_G.RemoteSpyData)
+                        statusLabel.Text = string.format("Logs: %d | Status: Active", #_G.RemoteSpyData)
                     end
                     
                     if oldInvoke then
@@ -437,82 +394,185 @@ local function createRemoteSpyGUI()
                 end
             end
         end
+        
+        logText.Text = string.format("Monitoring %d remotes...\nWaiting for events...", remoteCount)
+        updateLogDisplay()
+    end
+    
+    local function stopSpy()
+        _G.RemoteSpyActive = false
+        
+        for _, connection in pairs(spyConnections) do
+            if connection then
+                connection:Disconnect()
+            end
+        end
+        spyConnections = {}
     end
     
     toggleBtn.MouseButton1Click:Connect(function()
         if not _G.RemoteSpyActive then
             startSpy()
             toggleBtn.Text = "STOP"
-            tweenButton(toggleBtn, {
-                TextColor3 = Color3.fromRGB(255, 100, 100),
-                BackgroundColor3 = Color3.fromRGB(50, 15, 15)
-            })
-            tweenButton(toggleStroke, {
-                Color = Color3.fromRGB(255, 60, 60)
-            })
-            statusLabel.Text = "Active | 0"
+            toggleBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(100, 25, 25)
+            toggleBtn.BorderColor3 = Color3.fromRGB(255, 80, 80)
+            statusLabel.Text = string.format("Logs: %d | Status: Active", #_G.RemoteSpyData)
         else
-            _G.RemoteSpyActive = false
+            stopSpy()
             toggleBtn.Text = "START"
-            tweenButton(toggleBtn, {
-                TextColor3 = Color3.fromRGB(100, 255, 100),
-                BackgroundColor3 = Color3.fromRGB(20, 20, 28)
-            })
-            tweenButton(toggleStroke, {
-                Color = Color3.fromRGB(50, 50, 60)
-            })
-            statusLabel.Text = string.format("Stopped | %d", #_G.RemoteSpyData)
+            toggleBtn.TextColor3 = Color3.fromRGB(100, 255, 100)
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+            toggleBtn.BorderColor3 = Color3.fromRGB(60, 60, 60)
+            statusLabel.Text = string.format("Logs: %d | Status: Stopped", #_G.RemoteSpyData)
         end
     end)
     
     toggleBtn.MouseEnter:Connect(function()
         if not _G.RemoteSpyActive then
-            tweenButton(toggleBtn, {BackgroundColor3 = Color3.fromRGB(35, 70, 35)}, 0.1)
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(35, 70, 35)
         else
-            tweenButton(toggleBtn, {BackgroundColor3 = Color3.fromRGB(100, 25, 25)}, 0.1)
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(150, 35, 35)
         end
     end)
     
     toggleBtn.MouseLeave:Connect(function()
         if not _G.RemoteSpyActive then
-            tweenButton(toggleBtn, {BackgroundColor3 = Color3.fromRGB(20, 20, 28)}, 0.1)
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
         else
-            tweenButton(toggleBtn, {BackgroundColor3 = Color3.fromRGB(50, 15, 15)}, 0.1)
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(100, 25, 25)
         end
     end)
     
     saveBtn.MouseButton1Click:Connect(function()
         saveSpyData()
         saveBtn.Text = "SAVED!"
-        tweenButton(saveBtn, {TextColor3 = Color3.fromRGB(100, 255, 100)})
-        task.wait(1)
+        saveBtn.TextColor3 = Color3.fromRGB(100, 255, 100)
+        saveBtn.BackgroundColor3 = Color3.fromRGB(25, 70, 25)
+        wait(1)
         saveBtn.Text = "SAVE"
-        tweenButton(saveBtn, {TextColor3 = Color3.fromRGB(255, 200, 100)})
+        saveBtn.TextColor3 = Color3.fromRGB(255, 200, 100)
+        saveBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     end)
     
     saveBtn.MouseEnter:Connect(function()
-        tweenButton(saveBtn, {BackgroundColor3 = Color3.fromRGB(70, 50, 25)}, 0.1)
+        saveBtn.BackgroundColor3 = Color3.fromRGB(70, 50, 25)
     end)
     
     saveBtn.MouseLeave:Connect(function()
-        tweenButton(saveBtn, {BackgroundColor3 = Color3.fromRGB(20, 20, 28)}, 0.1)
+        saveBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     end)
     
     clearBtn.MouseButton1Click:Connect(function()
         _G.RemoteSpyData = {}
-        logText.Text = "Waiting..."
-        statusLabel.Text = "Ready | 0"
-        tweenButton(clearBtn, {TextColor3 = Color3.fromRGB(255, 255, 255)})
-        task.wait(0.3)
-        tweenButton(clearBtn, {TextColor3 = Color3.fromRGB(255, 100, 100)})
+        updateLogDisplay()
+        statusLabel.Text = "Logs: 0 | Status: " .. (_G.RemoteSpyActive and "Active" or "Ready")
+        clearBtn.Text = "CLEARED!"
+        clearBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        wait(0.5)
+        clearBtn.Text = "CLEAR"
+        clearBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
     end)
     
     clearBtn.MouseEnter:Connect(function()
-        tweenButton(clearBtn, {BackgroundColor3 = Color3.fromRGB(100, 25, 25)}, 0.1)
+        clearBtn.BackgroundColor3 = Color3.fromRGB(100, 25, 25)
     end)
     
     clearBtn.MouseLeave:Connect(function()
-        tweenButton(clearBtn, {BackgroundColor3 = Color3.fromRGB(20, 20, 28)}, 0.1)
+        clearBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    end)
+    
+    local isMinimized = false
+    
+    closeButton.MouseButton1Click:Connect(function()
+        if not isMinimized then
+            mainFrame.Visible = false
+            iconButton.Visible = true
+            isMinimized = true
+        end
+    end)
+    
+    iconButton.MouseButton1Click:Connect(function()
+        if isMinimized then
+            mainFrame.Visible = true
+            iconButton.Visible = false
+            isMinimized = false
+        end
+    end)
+    
+    local UIS = game:GetService("UserInputService")
+    local dragging = false
+    local dragStart = nil
+    local startPos = nil
+    
+    dragHandle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = mainFrame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+    
+    UIS.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            mainFrame.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+    
+    local iconDragging = false
+    local iconDragStart = nil
+    local iconStartPos = nil
+    local dragThreshold = 5
+    local iconDragMoved = false
+    
+    iconButton.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            iconDragging = true
+            iconDragStart = input.Position
+            iconStartPos = iconButton.Position
+            iconDragMoved = false
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    iconDragging = false
+                    
+                    if not iconDragMoved and isMinimized then
+                        mainFrame.Visible = true
+                        iconButton.Visible = false
+                        isMinimized = false
+                    end
+                end
+            end)
+        end
+    end)
+    
+    UIS.InputChanged:Connect(function(input)
+        if iconDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - iconDragStart
+            
+            if math.abs(delta.X) > dragThreshold or math.abs(delta.Y) > dragThreshold then
+                iconDragMoved = true
+            end
+            
+            iconButton.Position = UDim2.new(
+                iconStartPos.X.Scale,
+                iconStartPos.X.Offset + delta.X,
+                iconStartPos.Y.Scale,
+                iconStartPos.Y.Offset + delta.Y
+            )
+        end
     end)
 end
 
@@ -526,6 +586,6 @@ print("Features:")
 print("- Real-time remote monitoring")
 print("- Auto-save to TXT + JSON")
 print("- Live log display")
-print("- Compact 140x180px GUI")
-print("- Toggle minimize with icon")
+print("- 180x250px compact GUI")
+print("- Drag & minimize support")
 print("=================================")
