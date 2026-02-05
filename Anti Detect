@@ -1,257 +1,111 @@
-
 _G.RemoteSpyData = {}
 _G.RemoteSpyActive = false
 
 local HttpService = game:GetService("HttpService")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
 
-local function saveSpyData()
+local function saveSpy()
     if #_G.RemoteSpyData > 0 then
         local timestamp = os.date("%Y%m%d_%H%M%S")
-        local filename = "REMOTE_SPY_" .. timestamp .. ".txt"
+        local output = "REMOTE SPY LOG\n" .. string.rep("=", 40) .. "\n\n"
         
-        local output = "================================\n"
-        output = output .. "REMOTE SPY LOG\n"
-        output = output .. "Game: " .. game.Name .. "\n"
-        output = output .. "Place ID: " .. game.PlaceId .. "\n"
-        output = output .. "Date: " .. os.date("%Y-%m-%d %H:%M:%S") .. "\n"
-        output = output .. "================================\n\n"
-        
-        for i, log in ipairs(_G.RemoteSpyData) do
-            output = output .. string.format("[%s] %s: %s\n", log.Time, log.Type, log.Name)
-            output = output .. "Path: " .. log.Path .. "\n"
-            output = output .. "Arguments: " .. log.Args .. "\n"
-            output = output .. "--------------------------------\n"
+        for _, log in ipairs(_G.RemoteSpyData) do
+            output = output .. string.format("[%s] %s: %s\nArgs: %s\n%s\n", log.Time, log.Type, log.Name, log.Args, string.rep("-", 40))
         end
         
-        writefile(filename, output)
-        
-        local jsonFilename = "REMOTE_SPY_" .. timestamp .. ".json"
-        writefile(jsonFilename, HttpService:JSONEncode(_G.RemoteSpyData))
-        
-        print("Remote Spy saved to:", filename)
-        print("JSON saved to:", jsonFilename)
+        writefile("REMOTE_SPY_" .. timestamp .. ".txt", output)
+        writefile("REMOTE_SPY_" .. timestamp .. ".json", HttpService:JSONEncode(_G.RemoteSpyData))
+        print("Remote Spy saved!")
     end
 end
 
-local function createRemoteSpyGUI()
+local function createSpyGUI()
     local gui = Instance.new("ScreenGui")
     gui.Name = "RemoteSpyGUI"
     gui.Parent = game.CoreGui
     gui.ResetOnSpawn = false
-    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     
-    local iconButton = Instance.new("ImageButton")
-    iconButton.Name = "MinimizedIcon"
-    iconButton.Size = UDim2.new(0, 35, 0, 35)
-    iconButton.Position = UDim2.new(0, 60, 0, 60)
-    iconButton.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-    iconButton.BorderColor3 = Color3.fromRGB(255, 80, 80)
-    iconButton.BorderSizePixel = 2
-    iconButton.Image = ""
-    iconButton.Visible = false
-    iconButton.Active = true
-    iconButton.Parent = gui
-    
-    local iconCorner = Instance.new("UICorner")
-    iconCorner.CornerRadius = UDim.new(0, 6)
-    iconCorner.Parent = iconButton
-    
-    local iconLabel = Instance.new("TextLabel")
-    iconLabel.Size = UDim2.new(1, 0, 1, 0)
-    iconLabel.BackgroundTransparency = 1
-    iconLabel.Text = "R"
-    iconLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    iconLabel.Font = Enum.Font.GothamBold
-    iconLabel.TextSize = 16
-    iconLabel.Parent = iconButton
-    
-    local mainFrame = Instance.new("Frame")
-    mainFrame.Name = "MainFrame"
-    mainFrame.Size = UDim2.new(0, 180, 0, 250)
-    mainFrame.Position = UDim2.new(0.5, -90, 0.5, -125)
-    mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-    mainFrame.BorderColor3 = Color3.fromRGB(255, 80, 80)
-    mainFrame.BorderSizePixel = 2
-    mainFrame.Active = true
-    mainFrame.Visible = true
-    mainFrame.Parent = gui
-    
-    local mainCorner = Instance.new("UICorner")
-    mainCorner.CornerRadius = UDim.new(0, 8)
-    mainCorner.Parent = mainFrame
-    
-    local dragHandle = Instance.new("Frame")
-    dragHandle.Name = "DragHandle"
-    dragHandle.Size = UDim2.new(1, 0, 0, 25)
-    dragHandle.Position = UDim2.new(0, 0, 0, 0)
-    dragHandle.BackgroundTransparency = 1
-    dragHandle.Active = true
-    dragHandle.Parent = mainFrame
-    
-    local header = Instance.new("Frame")
-    header.Name = "Header"
-    header.Size = UDim2.new(1, 0, 0, 25)
-    header.Position = UDim2.new(0, 0, 0, 0)
-    header.BackgroundTransparency = 1
-    header.Parent = mainFrame
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 300, 0, 400)
+    frame.Position = UDim2.new(1, -310, 0.5, -200)
+    frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    frame.BorderColor3 = Color3.fromRGB(255, 100, 100)
+    frame.BorderSizePixel = 2
+    frame.Parent = gui
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
     
     local title = Instance.new("TextLabel")
-    title.Name = "Title"
-    title.Size = UDim2.new(0.75, 0, 1, 0)
-    title.Position = UDim2.new(0, 6, 0, 0)
+    title.Size = UDim2.new(1, 0, 0, 25)
     title.BackgroundTransparency = 1
     title.Text = "REMOTE SPY"
     title.TextColor3 = Color3.fromRGB(255, 255, 255)
     title.Font = Enum.Font.GothamBold
     title.TextSize = 12
-    title.TextXAlignment = Enum.TextXAlignment.Left
-    title.Parent = header
-    
-    local closeButton = Instance.new("TextButton")
-    closeButton.Name = "CloseButton"
-    closeButton.Size = UDim2.new(0, 20, 0, 20)
-    closeButton.Position = UDim2.new(1, -23, 0.5, -10)
-    closeButton.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-    closeButton.BorderColor3 = Color3.fromRGB(255, 80, 80)
-    closeButton.BorderSizePixel = 1
-    closeButton.Text = "X"
-    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    closeButton.Font = Enum.Font.GothamBold
-    closeButton.TextSize = 11
-    closeButton.Parent = header
-    
-    local closeCorner = Instance.new("UICorner")
-    closeCorner.CornerRadius = UDim.new(0, 4)
-    closeCorner.Parent = closeButton
-    
-    closeButton.MouseEnter:Connect(function()
-        closeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-    end)
-    
-    closeButton.MouseLeave:Connect(function()
-        closeButton.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-    end)
-    
-    local headerLine = Instance.new("Frame")
-    headerLine.Name = "HeaderLine"
-    headerLine.Size = UDim2.new(0.92, 0, 0, 1)
-    headerLine.Position = UDim2.new(0.04, 0, 0, 26)
-    headerLine.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
-    headerLine.BorderSizePixel = 0
-    headerLine.Parent = mainFrame
-
-    local buttonFrame = Instance.new("Frame")
-    buttonFrame.Name = "ButtonFrame"
-    buttonFrame.Size = UDim2.new(0.92, 0, 0, 26)
-    buttonFrame.Position = UDim2.new(0.04, 0, 0, 32)
-    buttonFrame.BackgroundTransparency = 1
-    buttonFrame.Parent = mainFrame
+    title.Parent = frame
     
     local toggleBtn = Instance.new("TextButton")
-    toggleBtn.Name = "ToggleButton"
-    toggleBtn.Size = UDim2.new(0.48, 0, 1, 0)
-    toggleBtn.Position = UDim2.new(0, 0, 0, 0)
+    toggleBtn.Size = UDim2.new(0.93, 0, 0, 28)
+    toggleBtn.Position = UDim2.new(0.035, 0, 0, 32)
     toggleBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    toggleBtn.BorderColor3 = Color3.fromRGB(60, 60, 60)
-    toggleBtn.BorderSizePixel = 1
-    toggleBtn.Text = "START"
+    toggleBtn.Text = "START SPY"
     toggleBtn.TextColor3 = Color3.fromRGB(100, 255, 100)
     toggleBtn.Font = Enum.Font.GothamBold
     toggleBtn.TextSize = 10
-    toggleBtn.Parent = buttonFrame
-    
-    local toggleCorner = Instance.new("UICorner")
-    toggleCorner.CornerRadius = UDim.new(0, 4)
-    toggleCorner.Parent = toggleBtn
+    toggleBtn.Parent = frame
+    Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 4)
     
     local saveBtn = Instance.new("TextButton")
-    saveBtn.Name = "SaveButton"
-    saveBtn.Size = UDim2.new(0.48, 0, 1, 0)
-    saveBtn.Position = UDim2.new(0.52, 0, 0, 0)
+    saveBtn.Size = UDim2.new(0.93, 0, 0, 28)
+    saveBtn.Position = UDim2.new(0.035, 0, 0, 65)
     saveBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    saveBtn.BorderColor3 = Color3.fromRGB(60, 60, 60)
-    saveBtn.BorderSizePixel = 1
-    saveBtn.Text = "SAVE"
+    saveBtn.Text = "SAVE LOG"
     saveBtn.TextColor3 = Color3.fromRGB(255, 200, 100)
     saveBtn.Font = Enum.Font.GothamBold
     saveBtn.TextSize = 10
-    saveBtn.Parent = buttonFrame
-    
-    local saveCorner = Instance.new("UICorner")
-    saveCorner.CornerRadius = UDim.new(0, 4)
-    saveCorner.Parent = saveBtn
+    saveBtn.Parent = frame
+    Instance.new("UICorner", saveBtn).CornerRadius = UDim.new(0, 4)
     
     local clearBtn = Instance.new("TextButton")
-    clearBtn.Name = "ClearButton"
-    clearBtn.Size = UDim2.new(0.92, 0, 0, 26)
-    clearBtn.Position = UDim2.new(0.04, 0, 0, 63)
+    clearBtn.Size = UDim2.new(0.93, 0, 0, 28)
+    clearBtn.Position = UDim2.new(0.035, 0, 0, 98)
     clearBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    clearBtn.BorderColor3 = Color3.fromRGB(60, 60, 60)
-    clearBtn.BorderSizePixel = 1
-    clearBtn.Text = "CLEAR"
+    clearBtn.Text = "CLEAR LOG"
     clearBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
     clearBtn.Font = Enum.Font.GothamBold
     clearBtn.TextSize = 10
-    clearBtn.Parent = mainFrame
-    
-    local clearCorner = Instance.new("UICorner")
-    clearCorner.CornerRadius = UDim.new(0, 4)
-    clearCorner.Parent = clearBtn
+    clearBtn.Parent = frame
+    Instance.new("UICorner", clearBtn).CornerRadius = UDim.new(0, 4)
     
     local statusLabel = Instance.new("TextLabel")
-    statusLabel.Name = "StatusLabel"
-    statusLabel.Size = UDim2.new(0.92, 0, 0, 18)
-    statusLabel.Position = UDim2.new(0.04, 0, 0, 94)
+    statusLabel.Size = UDim2.new(0.93, 0, 0, 20)
+    statusLabel.Position = UDim2.new(0.035, 0, 0, 131)
     statusLabel.BackgroundTransparency = 1
-    statusLabel.Text = "Logs: 0 | Status: Ready"
+    statusLabel.Text = "Status: Ready | Logs: 0"
     statusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
     statusLabel.Font = Enum.Font.Gotham
     statusLabel.TextSize = 9
     statusLabel.TextXAlignment = Enum.TextXAlignment.Left
-    statusLabel.Parent = mainFrame
-    
-    local listLine = Instance.new("Frame")
-    listLine.Name = "ListLine"
-    listLine.Size = UDim2.new(0.92, 0, 0, 1)
-    listLine.Position = UDim2.new(0.04, 0, 0, 115)
-    listLine.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
-    listLine.BorderSizePixel = 0
-    listLine.Parent = mainFrame
+    statusLabel.Parent = frame
     
     local logFrame = Instance.new("Frame")
-    logFrame.Name = "LogFrame"
-    logFrame.Size = UDim2.new(0.92, 0, 0, 110)
-    logFrame.Position = UDim2.new(0.04, 0, 0, 120)
+    logFrame.Size = UDim2.new(0.93, 0, 0, 220)
+    logFrame.Position = UDim2.new(0.035, 0, 0, 156)
     logFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-    logFrame.BorderColor3 = Color3.fromRGB(40, 40, 40)
-    logFrame.BorderSizePixel = 1
     logFrame.ClipsDescendants = true
-    logFrame.Parent = mainFrame
-    
-    local logCorner = Instance.new("UICorner")
-    logCorner.CornerRadius = UDim.new(0, 4)
-    logCorner.Parent = logFrame
+    logFrame.Parent = frame
+    Instance.new("UICorner", logFrame).CornerRadius = UDim.new(0, 4)
     
     local scrollFrame = Instance.new("ScrollingFrame")
-    scrollFrame.Name = "ScrollFrame"
     scrollFrame.Size = UDim2.new(1, 0, 1, 0)
-    scrollFrame.Position = UDim2.new(0, 0, 0, 0)
     scrollFrame.BackgroundTransparency = 1
-    scrollFrame.BorderSizePixel = 0
     scrollFrame.ScrollBarThickness = 4
-    scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
     scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
     scrollFrame.Parent = logFrame
     
     local logText = Instance.new("TextLabel")
-    logText.Name = "LogText"
-    logText.Size = UDim2.new(1, -6, 1, 0)
-    logText.Position = UDim2.new(0, 3, 0, 0)
+    logText.Size = UDim2.new(1, -10, 1, 0)
+    logText.Position = UDim2.new(0, 5, 0, 0)
     logText.BackgroundTransparency = 1
-    logText.Text = "Click START to begin monitoring..."
+    logText.Text = "Waiting for activity..."
     logText.TextColor3 = Color3.fromRGB(200, 200, 200)
     logText.Font = Enum.Font.Code
     logText.TextSize = 8
@@ -260,332 +114,86 @@ local function createRemoteSpyGUI()
     logText.TextWrapped = true
     logText.Parent = scrollFrame
     
-    local creditLabel = Instance.new("TextLabel")
-    creditLabel.Name = "CreditLabel"
-    creditLabel.Size = UDim2.new(1, 0, 0, 18)
-    creditLabel.Position = UDim2.new(0, 0, 1, -19)
-    creditLabel.BackgroundTransparency = 1
-    creditLabel.Text = "By: Nazam"
-    creditLabel.TextColor3 = Color3.fromRGB(120, 120, 120)
-    creditLabel.Font = Enum.Font.Gotham
-    creditLabel.TextSize = 9
-    creditLabel.Parent = mainFrame
+    local credit = Instance.new("TextLabel")
+    credit.Size = UDim2.new(1, 0, 0, 18)
+    credit.Position = UDim2.new(0, 0, 1, -19)
+    credit.BackgroundTransparency = 1
+    credit.Text = "By: Nazam"
+    credit.TextColor3 = Color3.fromRGB(120, 120, 120)
+    credit.Font = Enum.Font.Gotham
+    credit.TextSize = 9
+    credit.Parent = frame
     
-    local function updateLogDisplay()
+    local function updateLog()
         local displayText = ""
-        local maxDisplay = 30
-        local startIndex = math.max(1, #_G.RemoteSpyData - maxDisplay + 1)
-        
-        for i = startIndex, #_G.RemoteSpyData do
+        for i = math.max(1, #_G.RemoteSpyData - 50), #_G.RemoteSpyData do
             local log = _G.RemoteSpyData[i]
-            displayText = displayText .. string.format("[%s] %s: %s\n", log.Time, log.Type, log.Name)
-            if log.Args and log.Args ~= "" then
-                displayText = displayText .. string.format("Args: %s\n", log.Args)
-            end
-            displayText = displayText .. "\n"
+            displayText = displayText .. string.format("[%s] %s\nArgs: %s\n\n", log.Time, log.Name, log.Args)
         end
-        
-        if displayText == "" then
-            if _G.RemoteSpyActive then
-                logText.Text = "Monitoring... No events yet."
-            else
-                logText.Text = "Click START to begin monitoring..."
-            end
-        else
-            logText.Text = displayText
-        end
-        
-        logText.Size = UDim2.new(1, -6, 0, math.max(110, #displayText / 1.5))
+        logText.Text = displayText ~= "" and displayText or "Waiting for activity..."
+        logText.Size = UDim2.new(1, -10, 0, math.max(220, #displayText / 3))
         scrollFrame.CanvasSize = UDim2.new(0, 0, 0, logText.AbsoluteSize.Y)
         scrollFrame.CanvasPosition = Vector2.new(0, scrollFrame.AbsoluteCanvasSize.Y)
     end
-
-    local spyConnections = {}
     
     local function startSpy()
         _G.RemoteSpyActive = true
-        logText.Text = "Monitoring... Scanning for remotes..."
-        
-        local remoteCount = 0
         
         for _, remote in pairs(game:GetDescendants()) do
             if remote:IsA("RemoteEvent") then
-                remoteCount = remoteCount + 1
-                local connection = remote.OnClientEvent:Connect(function(...)
-                    if _G.RemoteSpyActive then
-                        local args = {...}
-                        local argsStr = ""
-                        
-                        for i, arg in ipairs(args) do
-                            if typeof(arg) == "Instance" then
-                                argsStr = argsStr .. tostring(arg.Name)
-                            elseif typeof(arg) == "table" then
-                                argsStr = argsStr .. "{table}"
-                            else
-                                argsStr = argsStr .. tostring(arg)
-                            end
-                            
-                            if i < #args then
-                                argsStr = argsStr .. ", "
-                            end
-                        end
-                        
-                        local logEntry = {
-                            Type = "RemoteEvent",
-                            Name = remote.Name,
-                            Path = remote:GetFullName(),
-                            Args = argsStr,
-                            Time = os.date("%H:%M:%S")
-                        }
-                        
-                        table.insert(_G.RemoteSpyData, logEntry)
-                        
-                        print("🔴 RemoteEvent:", remote.Name, "→", argsStr)
-                        
-                        updateLogDisplay()
-                        statusLabel.Text = string.format("Logs: %d | Status: Active", #_G.RemoteSpyData)
-                    end
-                end)
-                table.insert(spyConnections, connection)
-            end
-            
-            if remote:IsA("RemoteFunction") then
-                remoteCount = remoteCount + 1
-                local oldInvoke = remote.OnClientInvoke
-                
-                remote.OnClientInvoke = function(...)
-                    if _G.RemoteSpyActive then
-                        local args = {...}
-                        local argsStr = ""
-                        
-                        for i, arg in ipairs(args) do
-                            if typeof(arg) == "Instance" then
-                                argsStr = argsStr .. tostring(arg.Name)
-                            elseif typeof(arg) == "table" then
-                                argsStr = argsStr .. "{table}"
-                            else
-                                argsStr = argsStr .. tostring(arg)
-                            end
-                            
-                            if i < #args then
-                                argsStr = argsStr .. ", "
-                            end
-                        end
-                        
-                        local logEntry = {
-                            Type = "RemoteFunction",
-                            Name = remote.Name,
-                            Path = remote:GetFullName(),
-                            Args = argsStr,
-                            Time = os.date("%H:%M:%S")
-                        }
-                        
-                        table.insert(_G.RemoteSpyData, logEntry)
-                        
-                        print("🔵 RemoteFunction:", remote.Name, "→", argsStr)
-                        
-                        updateLogDisplay()
-                        statusLabel.Text = string.format("Logs: %d | Status: Active", #_G.RemoteSpyData)
+                remote.OnClientEvent:Connect(function(...)
+                    if not _G.RemoteSpyActive then return end
+                    
+                    local args = {...}
+                    local argsStr = ""
+                    for i, arg in ipairs(args) do
+                        argsStr = argsStr .. (typeof(arg) == "Instance" and arg.Name or tostring(arg))
+                        if i < #args then argsStr = argsStr .. ", " end
                     end
                     
-                    if oldInvoke then
-                        return oldInvoke(...)
-                    end
-                end
+                    table.insert(_G.RemoteSpyData, {
+                        Type = "RemoteEvent",
+                        Name = remote.Name,
+                        Path = remote:GetFullName(),
+                        Args = argsStr,
+                        Time = os.date("%H:%M:%S")
+                    })
+                    
+                    print("🔴", remote.Name, "→", argsStr)
+                    updateLog()
+                    statusLabel.Text = string.format("Status: Active | Logs: %d", #_G.RemoteSpyData)
+                end)
             end
         end
-        
-        logText.Text = string.format("Monitoring %d remotes...\nWaiting for events...", remoteCount)
-        updateLogDisplay()
-    end
-    
-    local function stopSpy()
-        _G.RemoteSpyActive = false
-        
-        for _, connection in pairs(spyConnections) do
-            if connection then
-                connection:Disconnect()
-            end
-        end
-        spyConnections = {}
     end
     
     toggleBtn.MouseButton1Click:Connect(function()
         if not _G.RemoteSpyActive then
             startSpy()
-            toggleBtn.Text = "STOP"
+            toggleBtn.Text = "STOP SPY"
             toggleBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
-            toggleBtn.BackgroundColor3 = Color3.fromRGB(100, 25, 25)
-            toggleBtn.BorderColor3 = Color3.fromRGB(255, 80, 80)
-            statusLabel.Text = string.format("Logs: %d | Status: Active", #_G.RemoteSpyData)
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 15, 15)
         else
-            stopSpy()
-            toggleBtn.Text = "START"
+            _G.RemoteSpyActive = false
+            toggleBtn.Text = "START SPY"
             toggleBtn.TextColor3 = Color3.fromRGB(100, 255, 100)
             toggleBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-            toggleBtn.BorderColor3 = Color3.fromRGB(60, 60, 60)
-            statusLabel.Text = string.format("Logs: %d | Status: Stopped", #_G.RemoteSpyData)
-        end
-    end)
-    
-    toggleBtn.MouseEnter:Connect(function()
-        if not _G.RemoteSpyActive then
-            toggleBtn.BackgroundColor3 = Color3.fromRGB(35, 70, 35)
-        else
-            toggleBtn.BackgroundColor3 = Color3.fromRGB(150, 35, 35)
-        end
-    end)
-    
-    toggleBtn.MouseLeave:Connect(function()
-        if not _G.RemoteSpyActive then
-            toggleBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-        else
-            toggleBtn.BackgroundColor3 = Color3.fromRGB(100, 25, 25)
         end
     end)
     
     saveBtn.MouseButton1Click:Connect(function()
-        saveSpyData()
+        saveSpy()
         saveBtn.Text = "SAVED!"
-        saveBtn.TextColor3 = Color3.fromRGB(100, 255, 100)
-        saveBtn.BackgroundColor3 = Color3.fromRGB(25, 70, 25)
         wait(1)
-        saveBtn.Text = "SAVE"
-        saveBtn.TextColor3 = Color3.fromRGB(255, 200, 100)
-        saveBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    end)
-    
-    saveBtn.MouseEnter:Connect(function()
-        saveBtn.BackgroundColor3 = Color3.fromRGB(70, 50, 25)
-    end)
-    
-    saveBtn.MouseLeave:Connect(function()
-        saveBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+        saveBtn.Text = "SAVE LOG"
     end)
     
     clearBtn.MouseButton1Click:Connect(function()
         _G.RemoteSpyData = {}
-        updateLogDisplay()
-        statusLabel.Text = "Logs: 0 | Status: " .. (_G.RemoteSpyActive and "Active" or "Ready")
-        clearBtn.Text = "CLEARED!"
-        clearBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        wait(0.5)
-        clearBtn.Text = "CLEAR"
-        clearBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
-    end)
-    
-    clearBtn.MouseEnter:Connect(function()
-        clearBtn.BackgroundColor3 = Color3.fromRGB(100, 25, 25)
-    end)
-    
-    clearBtn.MouseLeave:Connect(function()
-        clearBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    end)
-    
-    local isMinimized = false
-    
-    closeButton.MouseButton1Click:Connect(function()
-        if not isMinimized then
-            mainFrame.Visible = false
-            iconButton.Visible = true
-            isMinimized = true
-        end
-    end)
-    
-    iconButton.MouseButton1Click:Connect(function()
-        if isMinimized then
-            mainFrame.Visible = true
-            iconButton.Visible = false
-            isMinimized = false
-        end
-    end)
-    
-    local UIS = game:GetService("UserInputService")
-    local dragging = false
-    local dragStart = nil
-    local startPos = nil
-    
-    dragHandle.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = mainFrame.Position
-            
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
-        end
-    end)
-    
-    UIS.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - dragStart
-            mainFrame.Position = UDim2.new(
-                startPos.X.Scale,
-                startPos.X.Offset + delta.X,
-                startPos.Y.Scale,
-                startPos.Y.Offset + delta.Y
-            )
-        end
-    end)
-    
-    local iconDragging = false
-    local iconDragStart = nil
-    local iconStartPos = nil
-    local dragThreshold = 5
-    local iconDragMoved = false
-    
-    iconButton.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            iconDragging = true
-            iconDragStart = input.Position
-            iconStartPos = iconButton.Position
-            iconDragMoved = false
-            
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    iconDragging = false
-                    
-                    if not iconDragMoved and isMinimized then
-                        mainFrame.Visible = true
-                        iconButton.Visible = false
-                        isMinimized = false
-                    end
-                end
-            end)
-        end
-    end)
-    
-    UIS.InputChanged:Connect(function(input)
-        if iconDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - iconDragStart
-            
-            if math.abs(delta.X) > dragThreshold or math.abs(delta.Y) > dragThreshold then
-                iconDragMoved = true
-            end
-            
-            iconButton.Position = UDim2.new(
-                iconStartPos.X.Scale,
-                iconStartPos.X.Offset + delta.X,
-                iconStartPos.Y.Scale,
-                iconStartPos.Y.Offset + delta.Y
-            )
-        end
+        logText.Text = "Waiting for activity..."
+        statusLabel.Text = "Status: Ready | Logs: 0"
     end)
 end
 
-createRemoteSpyGUI()
-
-print("=================================")
-print("REMOTE SPY V2 LOADED!")
-print("By: Nazam | Optimized & Enhanced")
-print("=================================")
-print("Features:")
-print("- Real-time remote monitoring")
-print("- Auto-save to TXT + JSON")
-print("- Live log display")
-print("- 180x250px compact GUI")
-print("- Drag & minimize support")
-print("=================================")
+createSpyGUI()
+print("Remote Spy Loaded! By: Nazam")
